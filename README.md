@@ -1,9 +1,9 @@
 # CSI 3140 Lab 1
 
-## Purpose of the repository
+## Purpose
 
-This repository is for the task of the CSI 3140 lab1.
+The purpose of this repository is to complete CSI3140 Lab1 part 1 tasks, creating the repository: Yatzy
 
-## Group member
+## About Yatzy
 
-My teammate is Ruoyu Liu 300176134 
+Is a popular game in Nodric countries. Link: https://en.wikipedia.org/wiki/Yatzy
