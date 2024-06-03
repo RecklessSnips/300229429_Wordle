@@ -1,9 +1,21 @@
-# CSI 3140 Lab 1
+# CSI 3140 Assignment 2
 
 ## Purpose
 
-The purpose of this repository is to complete CSI3140 Lab1 part 1 tasks, creating the repository: Yatzy
+This is for assignment 2 Wordle.
 
-## About Yatzy
+## About Wordle
 
-Is a popular game in Nodric countries. Link: https://en.wikipedia.org/wiki/Yatzy
+Wordle is a popular game developed by software engineer Josh Wardle. Wiki: https://en.wikipedia.org/wiki/Wordle
+
+## Project Setup
+
+```sh
+npm install
+```
+
+### Compile and Hot-Reload for Development
+
+```sh
+npm run dev
+```
