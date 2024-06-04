@@ -1,5 +1,18 @@
-<script setup lang="ts"></script>
+<script lang="ts" setup>
+import Wordle from '@/components/Wordle.vue'
+</script>
 
-<template></template>
+<template>
+  <!-- <div class="container"> -->
+  <Wordle></Wordle>
+  <!-- </div> -->
+</template>
 
-<style scoped></style>
+<style scoped>
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+</style>
