@@ -35,7 +35,7 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 const toast = useToast()
@@ -44,24 +44,81 @@ const confirm = useConfirm()
 let currentRow = ref(0)
 let currentCol = ref(0)
 let visible = ref(false)
-let answer = ref('apple')
+const words = [
+  'apple',
+  'about',
+  'above',
+  'actor',
+  'acute',
+  'adopt',
+  'asain',
+  'aside',
+  'avoid',
+  'aware',
+  'baker',
+  'bland',
+  'blunt',
+  'broad',
+  'brush',
+  'brief',
+  'bread',
+  'break',
+  'broke',
+  'below',
+  'carry',
+  'catch',
+  'cause',
+  'cedar',
+  'chant',
+  'claim',
+  'class',
+  'climb',
+  'clear',
+  'clocl',
+  'dance',
+  'dandy',
+  'death',
+  'debit',
+  'decoy',
+  'depth',
+  'delay',
+  'daddy',
+  'dirty',
+  'doubt',
+  'eagle',
+  'early',
+  'earth',
+  'easel',
+  'eject',
+  'ethic',
+  'equal',
+  'event',
+  'every',
+  'exact',
+  'fable',
+  'facet',
+  'faith',
+  'fancy',
+  'feast',
+  'floor',
+  'first',
+  'final',
+  'flame',
+  'floor'
+]
+
+let answer = ref('')
 let index = ref([0, 0, 0, 0, 0])
 let life = ref(6)
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
   isValidWord('example').then((isValid) => console.log(isValid))
+  answer.value = words[Math.floor(Math.random() * words.length)]
+  console.log('Answer is: ', answer.value)
 })
 
 const inputWord = ref(Array.from({ length: 6 }, () => Array(5).fill('')))
-
-watch(currentRow, (newValue, oldValue) => {
-  console.log('Row', newValue, oldValue)
-})
-
-watch(currentCol, (newValue, oldValue) => {
-  console.log('Col', newValue, oldValue)
-})
 
 const giveUp = () => {
   visible.value = true
@@ -146,8 +203,6 @@ const checkBoard = () => {
     if (word[i] === answer.value[i].toUpperCase()) {
       index.value[i] = 1
     } else {
-      console.log(answer.value)
-      console.log(word[i])
       if (answer.value.toUpperCase().includes(word[i])) {
         index.value[i] = 0
       } else {
@@ -155,7 +210,6 @@ const checkBoard = () => {
       }
     }
   }
-  console.log(index.value)
 }
 
 const evaluateBoard = () => {
@@ -203,21 +257,6 @@ const resetBoard = () => {
     box.classList.remove('green', 'yellow', 'gray') // 同时移除三个类
   })
 }
-
-const restart = () => {
-  resetRowCol()
-  resetBoard()
-}
-
-/*
- [
-  "aqwer", "azxsd", "anvbm", "ahgfd", "aopqw",
-  "btyui", "bgfds", "bmkli", "bvncs", "bqwde",
-  "cfgds", "czxvb", "ctyui", "cmklo", "cplmk",
-  "dfgtr", "dvcxz", "dmnkl", "dqwsa", "dplok",
-  "efghj", "evcxz", "emnbv", "eqwpl", "ezxsd"
-]
- */
 </script>
 
 <style scoped>
