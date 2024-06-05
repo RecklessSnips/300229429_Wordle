@@ -2,8 +2,17 @@
   <div class="container">
     <div class="header">
       <div>
-        <Toast position="top-center"/>
-        <Button label="Give Up"  @click="giveUp"></Button>
+        <Toast position="top-center" />
+        <Dialog
+          v-model:visible="visible"
+          modal
+          header="You Lost!"
+          :style="{ width: '20%', height: '15%' }"
+          ><p>
+            The asnwer was: <span style="color: rgb(255, 200, 1)">{{ answer }}</span>
+          </p></Dialog
+        >
+        <Button label="Give Up" severity="danger" @click="giveUp"></Button>
       </div>
     </div>
     <div>
@@ -15,9 +24,7 @@
         </div>
       </div>
     </div>
-    <div class="info">
-      Life left: {{ life }}
-    </div>
+    <div class="info">Life left: {{ life }}</div>
   </div>
 </template>
 
@@ -28,18 +35,22 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import { ref, onMounted, watch, computed } from 'vue'
-import { useToast } from "primevue/usetoast";
-const toast = useToast();
+import { ref, onMounted, watch } from 'vue'
+import { useToast } from 'primevue/usetoast'
+import { useConfirm } from 'primevue/useconfirm'
+const toast = useToast()
+const confirm = useConfirm()
 
 let currentRow = ref(0)
 let currentCol = ref(0)
+let visible = ref(false)
 let answer = ref('apple')
+let index = ref([0, 0, 0, 0, 0])
 let life = ref(6)
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
-  isValidWord('example').then(isValid => console.log(isValid));
+  isValidWord('example').then((isValid) => console.log(isValid))
 })
 
 const inputWord = ref(Array.from({ length: 6 }, () => Array(5).fill('')))
@@ -53,9 +64,46 @@ watch(currentCol, (newValue, oldValue) => {
 })
 
 const giveUp = () => {
-  toast.add({severity: 'info', summary: 'Info', detail: 'Guess is not that easy huh?', life: 1000})
+  visible.value = true
   resetRowCol()
   resetBoard()
+  life.value = 6
+}
+
+const congrats = () => {
+  toast.add({
+    severity: 'success',
+    summary: 'Info',
+    detail: 'Congrats! You win the game! (Game will restart in 3 seconds)',
+    life: 3000
+  })
+}
+
+const popUp = () => {
+  toast.add({
+    severity: 'info',
+    summary: 'info',
+    detail: 'Opps, try again',
+    life: 2000
+  })
+}
+
+const lose = () => {
+  toast.add({
+    severity: 'error',
+    summary: 'Info',
+    detail: 'You lost!',
+    life: 2000
+  })
+}
+
+const warning = () => {
+  toast.add({
+    severity: 'warn',
+    summary: 'warn',
+    detail: 'Too Short',
+    life: 1500
+  })
 }
 
 const handleKeydown = (event: KeyboardEvent) => {
@@ -67,21 +115,26 @@ const handleKeydown = (event: KeyboardEvent) => {
     inputWord.value[currentRow.value][--currentCol.value] = ''
   } else if (key === 'Enter') {
     if (currentCol.value < 5) {
-      alert('Too Short')
+      warning()
     } else {
       checkBoard()
+      evaluateBoard()
       if (inputWord.value[currentRow.value].join('') === answer.value.toUpperCase()) {
-        alert('Congrats!')
-        resetBoard()
-        resetRowCol()
+        congrats()
+        setTimeout(() => {
+          resetBoard()
+          resetRowCol()
+        }, 3000)
       } else if (currentRow.value < 5) {
-        alert('Opps')
+        popUp()
         currentRow.value++
         currentCol.value = 0
+        life.value--
       } else {
-        alert('You lost!')
+        lose()
         resetBoard()
         resetRowCol()
+        life.value = 6
       }
     }
   }
@@ -89,27 +142,48 @@ const handleKeydown = (event: KeyboardEvent) => {
 
 const checkBoard = () => {
   let word = inputWord.value[currentRow.value]
-  let index = ref([0, 0, 0, 0, 0])
-  for(let i = 0; i < word.length; i++){
-      if(word[i] === answer.value[i].toUpperCase()){
-        index.value[i] = 1;
-      }else{
-        console.log(answer.value)
-        console.log(word[i])
-        if(answer.value.toUpperCase().includes(word[i])){
-          index.value[i] = 0;
-        }else{
-          index.value[i] = -1;
-        }
+  for (let i = 0; i < word.length; i++) {
+    if (word[i] === answer.value[i].toUpperCase()) {
+      index.value[i] = 1
+    } else {
+      console.log(answer.value)
+      console.log(word[i])
+      if (answer.value.toUpperCase().includes(word[i])) {
+        index.value[i] = 0
+      } else {
+        index.value[i] = -1
       }
+    }
   }
   console.log(index.value)
 }
 
+const evaluateBoard = () => {
+  index.value.forEach((value, i) => {
+    // Use .row to select class and :nth-child to specify which child
+    const box = document.querySelector(
+      `.row:nth-child(${currentRow.value + 1}) .word_box:nth-child(${i + 1})`
+    )
+    if (box) {
+      switch (value) {
+        case 1:
+          box.classList.add('green')
+          break
+        case 0:
+          box.classList.add('yellow')
+          break
+        case -1:
+          box.classList.add('gray')
+          break
+      }
+    }
+  })
+}
+
 async function isValidWord(word: string) {
-  const response = await fetch(`https://api.datamuse.com/words?sp=${word}&md=d&max=1`);
-  const data = await response.json();
-  return data.length > 0 && 'defs' in data[0];
+  const response = await fetch(`https://api.datamuse.com/words?sp=${word}&md=d&max=1`)
+  const data = await response.json()
+  return data.length > 0 && 'defs' in data[0]
 }
 
 const resetRowCol = () => {
@@ -118,11 +192,21 @@ const resetRowCol = () => {
 }
 
 const resetBoard = () => {
+  life.value = 6
   inputWord.value.forEach((arr, row) => {
     arr.forEach((_, col) => {
       inputWord.value[row][col] = ''
     })
   })
+  const boxes = document.querySelectorAll('.word_box')
+  boxes.forEach((box) => {
+    box.classList.remove('green', 'yellow', 'gray') // 同时移除三个类
+  })
+}
+
+const restart = () => {
+  resetRowCol()
+  resetBoard()
 }
 
 /*
@@ -137,11 +221,11 @@ const resetBoard = () => {
 </script>
 
 <style scoped>
-.header{
+.header {
   margin-bottom: 30rem;
   margin-right: 10rem;
 }
-.info{
+.info {
   margin-bottom: 30rem;
   margin-left: 9rem;
 }
@@ -153,6 +237,8 @@ const resetBoard = () => {
   font-size: 2rem;
 }
 .row {
+  display: flex;
+  justify-content: center;
   margin: 20px auto;
 }
 .word_box {
@@ -160,7 +246,6 @@ const resetBoard = () => {
   height: 50px;
   border: 1px bisque solid;
   margin: auto 5px;
-
   display: inline-block;
 }
 .word {
@@ -168,5 +253,29 @@ const resetBoard = () => {
   justify-content: center;
   align-items: center;
   height: 100%;
+}
+
+.green {
+  background-color: aquamarine;
+  animation: flip 1s ease forwards;
+}
+
+.yellow {
+  background-color: gold;
+  animation: flip 1s ease forwards;
+}
+
+.gray {
+  background-color: gray;
+  animation: flip 1s ease forwards;
+}
+
+@keyframes flip {
+  from {
+    transform: scale(1.3);
+  }
+  to {
+    transform: scale(1);
+  }
 }
 </style>
