@@ -7,15 +7,16 @@
           v-model:visible="visible"
           modal
           header="You Lost!"
-          :style="{ width: '20%', height: '15%' }"
+          :style="{ width: '20%', height: '20%' }"
           ><p>
-            The asnwer was: <span style="color: rgb(255, 200, 1)">{{ answer }}</span>
+            The asnwer was: <span style="color: rgb(255, 200, 1)">{{ oldAnswer }}</span>
           </p></Dialog
         >
         <Button label="Give Up" severity="danger" @click="giveUp"></Button>
       </div>
     </div>
     <div>
+      <div class="hint">Press any key!</div>
       <div>
         <div v-for="row in inputWord" class="row">
           <div v-for="word in row" class="word_box">
@@ -35,7 +36,7 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 const toast = useToast()
@@ -108,19 +109,34 @@ const words = [
 ]
 
 let answer = ref('')
+let oldAnswer = ref('')
 let index = ref([0, 0, 0, 0, 0])
 let life = ref(6)
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
   isValidWord('example').then((isValid) => console.log(isValid))
-  answer.value = words[Math.floor(Math.random() * words.length)]
+  getWord()
   console.log('Answer is: ', answer.value)
 })
 
 const inputWord = ref(Array.from({ length: 6 }, () => Array(5).fill('')))
 
+/*
+  Assign the old answer to the popup window,
+  Test if the word is genered properly
+*/
+watch(answer, (newValue, oldValue) => {
+  oldAnswer.value = oldValue
+  console.log(newValue, oldValue)
+})
+
+const getWord = () => {
+  answer.value = words[Math.floor(Math.random() * words.length)]
+}
+
 const giveUp = () => {
+  getWord()
   visible.value = true
   resetRowCol()
   resetBoard()
@@ -254,8 +270,9 @@ const resetBoard = () => {
   })
   const boxes = document.querySelectorAll('.word_box')
   boxes.forEach((box) => {
-    box.classList.remove('green', 'yellow', 'gray') // 同时移除三个类
+    box.classList.remove('green', 'yellow', 'gray')
   })
+  getWord()
 }
 </script>
 
@@ -274,6 +291,9 @@ const resetBoard = () => {
   align-items: center;
   height: 100vh;
   font-size: 2rem;
+}
+.hint {
+  text-align: center;
 }
 .row {
   display: flex;
