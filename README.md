@@ -8,7 +8,9 @@ This is for assignment 2 Wordle.
 
 Wordle is a popular game developed by software engineer Josh Wardle. Wiki: https://en.wikipedia.org/wiki/Wordle
 
-------
+---
+
+# If the picture not shown, go to the directory: doc/design_system/Game.pdf
 
 # Game States
 
@@ -48,7 +50,7 @@ If the player click the `Give Up` button, it will show the correct answer and re
 
 <img src="/Users/Ahsoka/Desktop/Screenshot 2024-06-18 at 9.57.30 PM.png" style="zoom:30%;" />
 
-------
+---
 
 ## Run Project
 
