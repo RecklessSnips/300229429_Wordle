@@ -7,6 +7,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import App from './App.vue'
+import router from './router/index'
 import Message from 'primevue/message'
 import Button from 'primevue/button'
 import Toast from 'primevue/toast'
@@ -19,6 +20,7 @@ const app = createApp(App)
 
 app.use(createPinia())
 app.use(PrimeVue)
+app.use(router)
 app.component('Message', Message)
 app.component('Button', Button)
 app.component('Toast', Toast)
