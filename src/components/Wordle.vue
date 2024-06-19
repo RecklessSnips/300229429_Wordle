@@ -9,7 +9,7 @@
           header="You Lost!"
           :style="{ width: '20%', height: '20%' }"
           ><p>
-            The asnwer was: <span style="color: rgb(255, 200, 1)">{{ oldAnswer }}</span>
+            The answer was: <span style="color: rgb(255, 200, 1)">{{ oldAnswer }}</span>
           </p></Dialog
         >
         <Button label="Give Up" severity="danger" @click="giveUp"></Button>
@@ -36,7 +36,7 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, onUnmounted } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 const toast = useToast()
@@ -115,7 +115,6 @@ let life = ref(6)
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
-  isValidWord('example').then((isValid) => console.log(isValid))
   getWord()
   console.log('Answer is: ', answer.value)
 })
@@ -128,7 +127,7 @@ const inputWord = ref(Array.from({ length: 6 }, () => Array(5).fill('')))
 */
 watch(answer, (newValue, oldValue) => {
   oldAnswer.value = oldValue
-  console.log(newValue, oldValue)
+  // console.log(newValue, oldValue)
 })
 
 const getWord = () => {
@@ -176,6 +175,15 @@ const warning = () => {
     summary: 'warn',
     detail: 'Too Short',
     life: 1500
+  })
+}
+
+const invalid = () => {
+  toast.add({
+    severity: 'warn',
+    summary: 'warn',
+    detail: 'Invalid English Word',
+    life: 1800
   })
 }
 
@@ -250,12 +258,6 @@ const evaluateBoard = () => {
   })
 }
 
-async function isValidWord(word: string) {
-  const response = await fetch(`https://api.datamuse.com/words?sp=${word}&md=d&max=1`)
-  const data = await response.json()
-  return data.length > 0 && 'defs' in data[0]
-}
-
 const resetRowCol = () => {
   currentRow.value = 0
   currentCol.value = 0
@@ -274,6 +276,10 @@ const resetBoard = () => {
   })
   getWord()
 }
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
 </script>
 
 <style scoped>
@@ -303,7 +309,7 @@ const resetBoard = () => {
 .word_box {
   width: 50px;
   height: 50px;
-  border: 1px bisque solid;
+  border: 1px rgb(242, 195, 138) solid;
   margin: auto 5px;
   display: inline-block;
 }

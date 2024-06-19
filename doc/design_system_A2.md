@@ -2,7 +2,7 @@
 
 ------
 
-This document outlines the design system for the Yatzy lab.
+This document outlines the design system for the Wordle project.
 
 # Fonts
 
@@ -18,47 +18,23 @@ This document outlines the design system for the Yatzy lab.
 
 ## Primary Color:
 
-- ### bisque
-
-- ### aquamarine
+- ### Black
 
 ## Secondary Color:
 
 - ### Gold
 
+- ### Aquamarine
+
 - ### Gray
 
-# Dice
+- ### rgb(255, 200, 1)
 
-------
-
-The implementation of our dice is shown below:
-
-## Function rollDice
-
-**Parameter:** times (which specifes how many dice to roll)
-
-**Return:** An array of integers indicate each dice's value
-
-**Function body:** Using the `Math.random()` to generate an integer from 0 to 1, then using the `Math.floor()` to restrict the number from 1 to 6.
-
-## Implementation:
-
-```javascript
-export const rollDice = (times) => {
-  let dices = [];
-  for (let i = 0; i < times; i++) {
-    dices.push(Math.floor(Math.random() * 6) + 1);
-  }
-  return dices;
-};
-```
+- ### rgb(242, 195, 138)
 
 # Wordle
 
 ------
-
-> We implement another game called <u>Wordle</u> instead of Yatzy.
 
 ## Game State
 
