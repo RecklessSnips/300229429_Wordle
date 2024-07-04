@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Wordle from '@/components/Wordle.vue'
 import Home from '@/components/Home.vue'
 import Portfolio from '@/components/Portfolio.vue'
+import ScoreBoard from '@/components/ScoreBoard.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -18,6 +19,10 @@ const router = createRouter({
     {
       path: '/Portfolio',
       component: Portfolio
+    },
+    {
+      path: '/ScoreBoard',
+      component: ScoreBoard
     },
     {
       path: '/',

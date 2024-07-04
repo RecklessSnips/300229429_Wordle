@@ -26,6 +26,7 @@
       </div>
     </div>
     <div class="info">Life left: {{ life }}</div>
+    <div>{{ attemptsStore.attempts }}</div>
   </div>
 </template>
 
@@ -36,11 +37,14 @@ export default {
 </script>
 
 <script lang="ts" setup>
+import api from '@/api/api.js'
 import { ref, onMounted, watch, onUnmounted } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
+import { useAttemptsStore } from '@/stores/attempts'
 const toast = useToast()
 const confirm = useConfirm()
+const attemptsStore = useAttemptsStore()
 
 let currentRow = ref(0)
 let currentCol = ref(0)
@@ -116,7 +120,6 @@ let life = ref(6)
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
   getWord()
-  console.log('Answer is: ', answer.value)
 })
 
 const inputWord = ref(Array.from({ length: 6 }, () => Array(5).fill('')))
@@ -127,7 +130,7 @@ const inputWord = ref(Array.from({ length: 6 }, () => Array(5).fill('')))
 */
 watch(answer, (newValue, oldValue) => {
   oldAnswer.value = oldValue
-  // console.log(newValue, oldValue)
+  console.log('Answer is: ', newValue)
 })
 
 const getWord = () => {
@@ -202,6 +205,12 @@ const handleKeydown = (event: KeyboardEvent) => {
       evaluateBoard()
       if (inputWord.value[currentRow.value].join('') === answer.value.toUpperCase()) {
         congrats()
+        // Construct a player object
+        let player = {
+          attempt_number: attemptsStore.attempts,
+          attempts: 7 - life.value
+        }
+        api.sendMessage(player)
         setTimeout(() => {
           resetBoard()
           resetRowCol()
@@ -274,6 +283,7 @@ const resetBoard = () => {
   boxes.forEach((box) => {
     box.classList.remove('green', 'yellow', 'gray')
   })
+  attemptsStore.attempts++
   getWord()
 }
 
