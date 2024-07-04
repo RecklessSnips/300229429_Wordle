@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import Wordle from '@/components/Wordle.vue'
 import Home from '@/components/Home.vue'
+import { onUnmounted } from 'vue'
 </script>
 
 <template>
@@ -16,6 +17,7 @@ import Home from '@/components/Home.vue'
       <RouterLink to="/Home">Home</RouterLink>
       <RouterLink to="/Portfolio">Portfolio</RouterLink>
       <RouterLink to="/Wordle">Wordle</RouterLink>
+      <RouterLink to="/ScoreBoard">ScoreBoard</RouterLink>
     </div>
   </div>
   <div>
