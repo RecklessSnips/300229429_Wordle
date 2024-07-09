@@ -13,7 +13,7 @@
       </thead>
       <tbody align="center"></tbody>
     </table>
-    <button @click="destroy">Destroy</button>
+    <button @click="destroyAndRefresh">Destroy</button>
   </div>
 </template>
 
@@ -61,7 +61,13 @@ async function fetchMessage() {
   }
 }
 
-const destroy = () => {
+
+function destroy() {
   api.destroySession()
+}
+
+function destroyAndRefresh() {
+  destroy()
+  window.location.reload()
 }
 </script>

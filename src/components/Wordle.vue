@@ -1,4 +1,8 @@
 <template>
+  <div class="subheader">
+    <div class="info1">Life left: {{ life }}</div>
+    <div class="info2">Attempts: {{ attemptsStore.attempts }}</div>
+  </div>
   <div class="container">
     <div class="header">
       <div>
@@ -14,7 +18,7 @@
         >
         <Button label="Give Up" severity="danger" @click="giveUp"></Button>
       </div>
-    </div>
+    </div>  
     <div>
       <div class="hint">Press any key!</div>
       <div>
@@ -25,8 +29,7 @@
         </div>
       </div>
     </div>
-    <div class="info">Life left: {{ life }}</div>
-    <div class="info">Attempts: {{ attemptsStore.attempts }}</div>
+    
   </div>
 </template>
 
@@ -295,18 +298,42 @@ onUnmounted(() => {
 <style scoped>
 .header {
   margin-bottom: 30rem;
-  margin-right: 10rem;
+  margin-right: 5rem;
+  
 }
-.info {
-  margin-bottom: 30rem;
-  margin-left: 9rem;
+.info1 {
+  display: inline;
+  margin-right: 200px;
+  font-size: 150%;
+  font-style: oblique;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-weight: bold;
+  
+
+}
+.info2{
+  display: inline;
+  margin-left: 200px;
+  font-size: 150%;
+  font-style: oblique;
+  font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-weight: bold;
+}
+
+.subheader {
+  display: flex;
+  justify-content: center; 
+  align-items: center; 
+  margin-top: 40px;
+  padding: 0 20px; 
 }
 .container {
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items:start;
   height: 100vh;
   font-size: 2rem;
+  margin-top: 4rem;
 }
 .hint {
   text-align: center;
@@ -345,9 +372,7 @@ onUnmounted(() => {
   animation: flip 1s ease forwards;
 }
 
-.attempts{
 
-}
 
 @keyframes flip {
   from {
