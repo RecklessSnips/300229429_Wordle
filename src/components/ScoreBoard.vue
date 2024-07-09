@@ -1,8 +1,11 @@
 <template>
   <div class="container">
     <h1><span>Top 3 Scoreboard</span></h1>
+    <Toast position="top-center" />
     <table border="1" cellspacing="0" width="500">
-      <caption>Table</caption>
+      <caption>
+        Table
+      </caption>
       <thead align="center">
         <tr>
           <td>Attempt Number</td>
@@ -11,10 +14,9 @@
       </thead>
       <tbody align="center"></tbody>
     </table>
-    <Button label="Destroy" severity="danger"  @click="destroyAndRefresh"></Button>  
+    <Button label="Clean Board" severity="danger" @click="destroyAndRefresh"></Button>
   </div>
 </template>
-
 
 <script lang="ts">
 export default {
@@ -24,12 +26,21 @@ export default {
 
 <script lang="ts" setup>
 import api from '@/api/api.js'
-
+import { useToast } from 'primevue/usetoast'
 import { ref, onMounted, watch, onUnmounted } from 'vue'
-
+const toast = useToast()
 onMounted(() => {
   fetchMessage()
 })
+
+const congrats = () => {
+  toast.add({
+    severity: 'success',
+    summary: 'Info',
+    detail: 'Score Board has been reset',
+    life: 2000
+  })
+}
 
 async function fetchMessage() {
   try {
@@ -42,6 +53,9 @@ async function fetchMessage() {
     })
 
     session_array.forEach((player) => {
+      if (player[0] == 'Attempt_Number') {
+        return
+      }
       // Create the table elements
       const tr = document.createElement('tr')
       const td_key = document.createElement('td')
@@ -60,14 +74,16 @@ async function fetchMessage() {
   }
 }
 
-
 function destroy() {
   api.destroySession()
 }
 
 function destroyAndRefresh() {
+  congrats()
   destroy()
-  window.location.reload()
+  setTimeout(() => {
+    window.location.reload()
+  }, 2000)
 }
 </script>
 
@@ -78,28 +94,30 @@ function destroyAndRefresh() {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  height: 100vh; 
+  height: 100vh;
 }
 
 h1 {
   text-align: center;
   font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
   color: crimson;
-
 }
 
 table {
   margin: 20px 0;
-  border-collapse: collapse; 
+  border-collapse: collapse;
   width: 500px;
 }
 
-table, th, td {
-  border: 2px solid black; 
+table,
+th,
+td {
+  border: 2px solid black;
 }
 
-th, td {
-  padding: 10px; 
+th,
+td {
+  padding: 10px;
   text-align: center;
 }
 

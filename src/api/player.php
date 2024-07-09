@@ -21,16 +21,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         die(json_encode(["error" => "Invalid JSON: " . json_last_error_msg()]));
     }
 
-    if (isset($data['attempt_number']) && isset($data['attempts'])) {
-        $attempt_number = $data['attempt_number'];
-        $attempts = $data['attempts'];
+    if (isset($data['a_number']) && isset($data['a_attempts'])) {
+        print("Hi");
+        $attempt_number = $data['a_number'];
+        $attempts = $data['a_attempts'];
         $_SESSION["Attempt_$attempt_number"] = $attempts;
         
         $response = ["Attempt " . $attempt_number => $_SESSION["Attempt_$attempt_number"]];
         echo json_encode($response);
 
-    } else {
-        echo json_encode(["error" => "Life not set"]);
     }
+} elseif ($_SERVER["REQUEST_METHOD"] === "GET") {
+    echo json_encode($_SESSION);
+} else {
+    echo json_encode(["error" => "Life not set"]);
 }
 ?>
