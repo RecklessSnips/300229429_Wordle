@@ -26,7 +26,7 @@
       </div>
     </div>
     <div class="info">Life left: {{ life }}</div>
-    <div>{{ attemptsStore.attempts }}</div>
+    <div class="info">Attempts: {{ attemptsStore.attempts }}</div>
   </div>
 </template>
 
@@ -343,6 +343,10 @@ onUnmounted(() => {
 .gray {
   background-color: gray;
   animation: flip 1s ease forwards;
+}
+
+.attempts{
+
 }
 
 @keyframes flip {
