@@ -1,10 +1,8 @@
 <template>
-  <div>
+  <div class="container">
     <h1><span>Top 3 Scoreboard</span></h1>
     <table border="1" cellspacing="0" width="500">
-      <caption>
-        Table
-      </caption>
+      <caption>Table</caption>
       <thead align="center">
         <tr>
           <td>Attempt Number</td>
@@ -13,9 +11,10 @@
       </thead>
       <tbody align="center"></tbody>
     </table>
-    <button @click="destroyAndRefresh">Destroy</button>
+    <Button label="Destroy" severity="danger"  @click="destroyAndRefresh"></Button>  
   </div>
 </template>
+
 
 <script lang="ts">
 export default {
@@ -71,3 +70,46 @@ function destroyAndRefresh() {
   window.location.reload()
 }
 </script>
+
+<style scoped>
+.container {
+  margin-bottom: 30rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100vh; 
+}
+
+h1 {
+  text-align: center;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  color: crimson;
+
+}
+
+table {
+  margin: 20px 0;
+  border-collapse: collapse; 
+  width: 500px;
+}
+
+table, th, td {
+  border: 2px solid black; 
+}
+
+th, td {
+  padding: 10px; 
+  text-align: center;
+}
+
+caption {
+  caption-side: top;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+button {
+  margin-top: 20px;
+}
+</style>
