@@ -11,15 +11,21 @@ const apiClient = axios.create({
 
 export default {
   getMessage() {
-    return apiClient.get('/get.php')
+    return apiClient.get('/player.php')
   },
   sendMessage(player) {
     console.log(player)
     // const attempts = JSON.stringify({ attempt })
     // console.log(attempts)
-    return apiClient.post('/post.php', player)
+    return apiClient.post('/player.php', player)
   },
   destroySession() {
     return apiClient.get('/quit.php')
+  },
+  postAttempts(attempts) {
+    apiClient.post('/attempts.php', JSON.stringify({ attempts }))
+  },
+  getAttempts() {
+    return apiClient.get('/attempts.php')
   }
 }

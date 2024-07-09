@@ -1,7 +1,7 @@
 <template>
   <div class="subheader">
     <div class="info1">Life left: {{ life }}</div>
-    <div class="info2">Attempts: {{ attemptsStore.attempts }}</div>
+    <div class="info2">Attempts: {{ php_attempts }}</div>
   </div>
   <div class="container">
     <div class="header">
@@ -18,7 +18,7 @@
         >
         <Button label="Give Up" severity="danger" @click="giveUp"></Button>
       </div>
-    </div>  
+    </div>
     <div>
       <div class="hint">Press any key!</div>
       <div>
@@ -29,7 +29,6 @@
         </div>
       </div>
     </div>
-    
   </div>
 </template>
 
@@ -44,14 +43,13 @@ import api from '@/api/api.js'
 import { ref, onMounted, watch, onUnmounted } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
-import { useAttemptsStore } from '@/stores/attempts'
 const toast = useToast()
 const confirm = useConfirm()
-const attemptsStore = useAttemptsStore()
 
 let currentRow = ref(0)
 let currentCol = ref(0)
 let visible = ref(false)
+let php_attempts = ref(0)
 const words = [
   'apple',
   'about',
@@ -123,6 +121,8 @@ let life = ref(6)
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
   getWord()
+  // api.postAttempts(1)
+  fetchMessage()
 })
 
 const inputWord = ref(Array.from({ length: 6 }, () => Array(5).fill('')))
@@ -210,8 +210,8 @@ const handleKeydown = (event: KeyboardEvent) => {
         congrats()
         // Construct a player object
         let player = {
-          attempt_number: attemptsStore.attempts,
-          attempts: 7 - life.value
+          a_number: php_attempts.value,
+          a_attempts: 7 - life.value
         }
         api.sendMessage(player)
         setTimeout(() => {
@@ -286,8 +286,24 @@ const resetBoard = () => {
   boxes.forEach((box) => {
     box.classList.remove('green', 'yellow', 'gray')
   })
-  attemptsStore.attempts++
+  api.postAttempts(php_attempts.value++)
   getWord()
+}
+
+async function fetchMessage() {
+  try {
+    const session = await api.getAttempts()
+    if (session.data.length == 0) {
+      console.log(session)
+      php_attempts.value = 1
+      return
+    } else {
+      const attempts_object = session.data['Attempt_Number']
+      php_attempts.value = attempts_object
+    }
+  } catch (error) {
+    console.error('Error fetching message:', error)
+  }
 }
 
 onUnmounted(() => {
@@ -299,7 +315,6 @@ onUnmounted(() => {
 .header {
   margin-bottom: 30rem;
   margin-right: 5rem;
-  
 }
 .info1 {
   display: inline;
@@ -308,29 +323,27 @@ onUnmounted(() => {
   font-style: oblique;
   font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
   font-weight: bold;
-  
-
 }
-.info2{
+.info2 {
   display: inline;
   margin-left: 200px;
   font-size: 150%;
   font-style: oblique;
-  font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
   font-weight: bold;
 }
 
 .subheader {
   display: flex;
-  justify-content: center; 
-  align-items: center; 
+  justify-content: center;
+  align-items: center;
   margin-top: 40px;
-  padding: 0 20px; 
+  padding: 0 20px;
 }
 .container {
   display: flex;
   justify-content: center;
-  align-items:start;
+  align-items: start;
   height: 100vh;
   font-size: 2rem;
   margin-top: 4rem;
@@ -371,8 +384,6 @@ onUnmounted(() => {
   background-color: gray;
   animation: flip 1s ease forwards;
 }
-
-
 
 @keyframes flip {
   from {
