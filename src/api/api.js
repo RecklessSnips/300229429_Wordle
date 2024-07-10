@@ -14,9 +14,6 @@ export default {
     return apiClient.get('/player.php')
   },
   sendMessage(player) {
-    console.log(player)
-    // const attempts = JSON.stringify({ attempt })
-    // console.log(attempts)
     return apiClient.post('/player.php', player)
   },
   destroySession() {

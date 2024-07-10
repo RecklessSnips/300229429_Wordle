@@ -22,7 +22,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     if (isset($data['a_number']) && isset($data['a_attempts'])) {
-        print("Hi");
         $attempt_number = $data['a_number'];
         $attempts = $data['a_attempts'];
         $_SESSION["Attempt_$attempt_number"] = $attempts;

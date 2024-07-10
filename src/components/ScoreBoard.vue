@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h1><span>Top 3 Scoreboard</span></h1>
+    <h1><span>Top 5 Scoreboard</span></h1>
     <Toast position="top-center" />
     <table border="1" cellspacing="0" width="500">
       <caption>
@@ -46,13 +46,17 @@ async function fetchMessage() {
   try {
     const session = await api.getMessage()
     const session_object = session.data
+    console.log(session_object)
     const tbody = document.getElementsByTagName('tbody')[0]
-    // Sort the attempts in ascending order
-    const session_array = Object.entries(session_object).sort((a, b) => {
-      return a[1] - b[1]
-    })
+    // Filter out 'Attempt_Number' and then sort the attempts in ascending order
+    const session_array = Object.entries(session_object)
+      .filter((player) => player[0] !== 'Attempt_Number')
+      .sort((a, b) => a[1] - b[1])
 
-    session_array.forEach((player) => {
+    // Only keep the top 5 attempts
+    const top_5 = session_array.slice(0, 5)
+
+    top_5.forEach((player) => {
       if (player[0] == 'Attempt_Number') {
         return
       }

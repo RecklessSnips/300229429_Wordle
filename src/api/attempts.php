@@ -14,7 +14,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $json = file_get_contents("php://input");
     $data = json_decode($json, true);
-    $_SESSION["Attempt_Number"] = 1;
+    
+    // Initialize Attempt_Number if not already set
+    if (!isset($_SESSION["Attempt_Number"])) {
+        $_SESSION["Attempt_Number"] = 1;
+    }
+
     if (json_last_error() !== JSON_ERROR_NONE) {
         http_response_code(400);
         die(json_encode(["error" => "Invalid JSON: " . json_last_error_msg()]));

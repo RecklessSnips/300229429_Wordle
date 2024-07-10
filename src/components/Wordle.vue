@@ -121,7 +121,6 @@ let life = ref(6)
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
   getWord()
-  // api.postAttempts(1)
   fetchMessage()
 })
 
@@ -214,9 +213,11 @@ const handleKeydown = (event: KeyboardEvent) => {
           a_attempts: 7 - life.value
         }
         api.sendMessage(player)
+        api.postAttempts(1)
         setTimeout(() => {
           resetBoard()
           resetRowCol()
+          fetchMessage()
         }, 3000)
       } else if (currentRow.value < 5) {
         popUp()
@@ -225,9 +226,13 @@ const handleKeydown = (event: KeyboardEvent) => {
         life.value--
       } else {
         lose()
-        resetBoard()
-        resetRowCol()
-        life.value = 6
+        api.postAttempts(1)
+        setTimeout(() => {
+          resetBoard()
+          resetRowCol()
+          fetchMessage()
+          life.value = 6
+        }, 3000)
       }
     }
   }
@@ -286,7 +291,6 @@ const resetBoard = () => {
   boxes.forEach((box) => {
     box.classList.remove('green', 'yellow', 'gray')
   })
-  api.postAttempts(php_attempts.value++)
   getWord()
 }
 

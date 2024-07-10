@@ -62,7 +62,15 @@ If the player click the `Give Up` button, it will show the correct answer and re
 npm install
 ```
 
-### 3. Run the command to run project and follow the instructions
+### 3. Navigate to the project folder and run the command to start PHP server
+
+(Make sure you are in the project folder)
+
+```sh
+php -S localhost:8080 -t src/api
+```
+
+### 4. Run the command to run project and follow the instructions
 
 (Or go to the localhost with port: 5173: http://localhost:5173)
 
