@@ -50,14 +50,14 @@ async function fetchMessage() {
     const tbody = document.getElementsByTagName('tbody')[0]
     // Filter out 'Attempt_Number' and then sort the attempts in ascending order
     const session_array = Object.entries(session_object)
-      .filter((player) => player[0] !== 'Attempt_Number')
+      .filter((player) => player[0] !== 'Attempt_Number' && player[0] !== 'answer')
       .sort((a, b) => a[1] - b[1])
 
     // Only keep the top 5 attempts
     const top_5 = session_array.slice(0, 5)
 
     top_5.forEach((player) => {
-      if (player[0] == 'Attempt_Number') {
+      if (player[0] == 'Attempt_Number' || player[0] == 'answer') {
         return
       }
       // Create the table elements

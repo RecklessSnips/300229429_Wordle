@@ -49,6 +49,14 @@ export default {
   // Get the global variable attempts from $_SESSION array
   getAttempts() {
     return apiClient.get('/attempts.php')
+  },
+  // Check if a word matches the answer
+  checkWord(word) {
+    return apiClient.post('/checkWord.php', word)
+  },
+  // Get a random word
+  getWord() {
+    return apiClient.get('/word.php')
   }
 }
 ```
@@ -62,7 +70,7 @@ This variable is aim to track the total number of attempts the player since the 
 We update the variable when the user either win or lose a game:
 
 ```javascript
-const resetBoard = () => {
+const handleKeydown = async (event: KeyboardEvent) => {
   ...
   // Pass the variable to the attempts.php
   api.postAttempts(php_attempts.value++)
@@ -104,7 +112,9 @@ In the `player.php` we store a object:
 
 ```javascript
 let player = {
+  // Global variable
   a_number: php_attempts.value,
+  // How many times player has tried
   a_attempts: 7 - life.value
 }
 ```
@@ -112,20 +122,109 @@ let player = {
 into the session. In the method handleKeyDown, we pass this object to the player.php:
 
 ```javascript
-const handleKeydown = (event: KeyboardEvent) => {
-  ...
-  if (inputWord.value[currentRow.value].join('') === answer.value.toUpperCase()) {
-	...
-    // Construct a player object
-    let player = {
-      a_number: php_attempts.value,
-      a_attempts: 7 - life.value
-    }
-    // Send the pbject
-    api.sendMessage(player)
-		...
+// Sending the input word to the php server
+const word = inputWord.value[currentRow.value].join('')
+/* 
+Sends the word, correct answer, row and column information to the checkWord.php,
+which will return the game state: (win, lose, continue), and the index array to
+display the correct color of the div.
+*/
+const response = await api.checkWord({
+  word,
+  answer: answer.value,
+  currentRow: currentRow.value,
+  currentCol: currentCol.value
+})
+// Updates the index array
+index.value = response.data.index
+// Update the div color
+evaluateBoard()
+// If user's word is correct
+if (response.data.result === 'win') {
+  congrats()
+  let player = {
+    a_number: php_attempts.value,
+    a_attempts: 7 - life.value
   }
+  // Sends the current attempt number and attempts
+  api.sendMessage(player)
+  // Update the total attempt number (global variable)
+  api.postAttempts(1)
+  setTimeout(() => {
+    resetBoard()
+    resetRowCol()
+    fetchMessage()
+  }, 3000)
+} else if (response.data.result === 'lose') {
+  // Lost, waste one life
+  lose()
+  api.postAttempts(1)
+  setTimeout(() => {
+    resetBoard()
+    resetRowCol()
+    fetchMessage()
+    life.value = 6
+  }, 3000)
+} else {
+  // Go to the next line
+  popUp()
+  currentRow.value++
+  currentCol.value = 0
+  life.value--
+  index.value = response.data.index
 }
+}
+```
+
+In the checkWord.php:
+
+```php
+<?php
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $json = file_get_contents("php://input");
+    $data = json_decode($json, true);
+    
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        http_response_code(400);
+        die(json_encode(["error" => "Invalid JSON: " . json_last_error_msg()]));
+    }
+		
+    if (isset($data['word']) && isset($data['answer']) && isset($data['currentRow']) && 							                         																			isset($data['currentCol'])) {
+      	// Get the word, answer, row, and col.
+        $word = strtoupper($data['word']);
+        $answer = strtoupper($data['answer']);
+        $currentRow = $data['currentRow'];
+        $currentCol = $data['currentCol'];
+	      // Initialize the index array with -1
+        $index = array_fill(0, 5, -1);
+        // Check the word if match
+        for ($i = 0; $i < strlen($word); $i++) {
+            if ($word[$i] === $answer[$i]) {
+                $index[$i] = 1;
+            } elseif (strpos($answer, $word[$i]) !== false) {
+                $index[$i] = 0;
+            }
+        }
+				// Win
+        if ($word === $answer) {
+            echo json_encode(["result" => "win", "index" => $index]);
+        } 
+	      // Lose
+      	elseif ($data['currentRow'] >= 5) {
+            echo json_encode(["result" => "lose", "index" => $index]);
+        } 
+      	// Continue
+      	else {
+            echo json_encode(["result" => "continue", "index" => $index]);
+        }
+    } else {
+        http_response_code(400);
+        echo json_encode(["error" => "Missing required fields"]);
+    }
+}else {
+    echo json_encode(["error" => "Life not set"]);
+}
+?>
 ```
 
 In the player.php:
@@ -164,22 +263,19 @@ Lastly, we will retrieve the both the global variable and the player attempts fr
 async function fetchMessage() {
   try {
     const session = await api.getMessage()
-    // Get session's data
     const session_object = session.data
+    console.log(session_object)
     const tbody = document.getElementsByTagName('tbody')[0]
-    
     // Filter out 'Attempt_Number' and then sort the attempts in ascending order
     const session_array = Object.entries(session_object)
-      .filter((player) => player[0] !== 'Attempt_Number')
+      .filter((player) => player[0] !== 'Attempt_Number' && player[0] !== 'answer')
       .sort((a, b) => a[1] - b[1])
 
     // Only keep the top 5 attempts
     const top_5 = session_array.slice(0, 5)
-		
-    // Put each attempts into the table, except the global variable
+
     top_5.forEach((player) => {
-      // Ignore
-      if (player[0] == 'Attempt_Number') {
+      if (player[0] == 'Attempt_Number' || player[0] == 'answer') {
         return
       }
       // Create the table elements
@@ -200,6 +296,48 @@ async function fetchMessage() {
   }
 }
 ```
+
+## Get Random Words
+
+We have a `word.php` to generate a random word
+
+```php
+<?php
+...
+
+$words = [
+  'apple', 'about', 'above', 'actor', 'acute', 'adopt', 'asain', 'aside', 'avoid', 'aware',
+  'baker', 'bland', 'blunt', 'broad', 'brush', 'brief', 'bread', 'break', 'broke', 'below',
+  'carry', 'catch', 'cause', 'cedar', 'chant', 'claim', 'class', 'climb', 'clear', 'cendy',
+  'dance', 'dandy', 'death', 'debit', 'decoy', 'depth', 'delay', 'daddy', 'dirty', 'doubt',
+  'eagle', 'early', 'earth', 'easel', 'eject', 'ethic', 'equal', 'event', 'every', 'exact',
+  'fable', 'facet', 'faith', 'fancy', 'feast', 'floor', 'first', 'final', 'flame', 'floor'
+];
+
+...
+
+if ($_SERVER["REQUEST_METHOD"] === "GET") {
+    $random_word = $words[array_rand($words)];
+    $_SESSION['answer'] = $random_word;
+    echo json_encode(["answer" => $_SESSION['answer']]);
+}
+?>
+```
+
+We call this in our JS:
+
+```javascript
+const fetchWord = async () => {
+  try {
+    const response = await api.getWord()
+    answer.value = response.data.answer
+  } catch (error) {
+    console.error('Error fetching word:', error)
+  }
+}
+```
+
+
 
 ## Clean Scoreboard
 
@@ -270,37 +408,52 @@ Run this to start the php server
 
 The game should look like
 
-<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-10 at 3.50.52 PM.png" style="zoom:50%;" />
+(The view Wordle(from assignment 2) and Wordle_V2 are exactly the same, but using different server. Wordle use the JS to compute the logic, but Wordle_V2 use Php. So Wordle is just a **old** **version**)
 
-<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-10 at 3.51.39 PM.png" style="zoom:50%;" />
+<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-11 at 4.49.13 PM.png" style="zoom:50%;" />
+
+<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-11 at 4.50.00 PM.png" style="zoom:50%;" />
 
 ## 2 Playing
 
 Now start our first trial
 
-You can see on the terminal, the correct answer is: facet, and we have used 3 life, if we enter the correct answer in the 4th line, then our attempt number is 1(1st round), and the attempts is 4.
+You can see on the terminal, the correct answer is: broke, and we have used 4 lives, if we enter the correct answer in the 5th line, then our attempt number is 1(1st round), and the attempts is 5.
 
-<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-10 at 3.52.31 PM.png" style="zoom:50%;" />
+<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-11 at 4.53.03 PM.png" style="zoom:50%;" />
 
 Lets check out scoreboard, you can see the table has been updated, the Attempt number indicates n-th round of player's result, and the right column is the number of attempts player used.
 
-<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-10 at 3.54.04 PM.png" style="zoom:50%;" />
+<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-11 at 4.53.45 PM.png" style="zoom:50%;" />
 
 Let's play again, now attempt number is 2 since we are in our 2nd round. And we are try to enter the correct answer in the first try!
 
-<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-10 at 3.57.00 PM.png" style="zoom:50%;" />
+<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-11 at 4.54.56 PM.png" style="zoom:50%;" />
 
-Now on the scoreboard, the table will display the 2nd try first since it has a lower(better) attempts.
+Now on the scoreboard, the table will display the 2nd try **first** since it has a lower(better) attempts.
 
-<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-10 at 3.57.23 PM.png" style="zoom:50%;" />
+<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-11 at 4.55.24 PM.png" style="zoom:50%;" />
 
-> The table should write as: Top 5 Scoreboard. I didn't realize it by far...
+Of course, if you enter a wrong answer, it will prompt you:
+
+<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-11 at 4.56.11 PM.png" style="zoom:50%;" />
+
+Or not enough characters:
+
+<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-11 at 4.56.28 PM.png" style="zoom:50%;" />
+
+And, if you waste all the lives, the total attempt number will increase, but will not stored into the score board
+<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-11 at 4.57.33 PM.png" style="zoom:50%;" />
+
+As can be seen, there's no record for <u>attempt number 5</u>:
+
+<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-11 at 4.58.55 PM.png" style="zoom:50%;" />
 
 ## 3 Keep playing
 
 Lets keep try a few time, and see the results.
 
-<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-10 at 4.31.31 PM.png" style="zoom:50%;" />
+<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-11 at 4.59.54 PM.png" style="zoom:50%;" />
 
 As the table shows, no matter how many attempts we try, it will only store the top 5 scores!
 
@@ -308,14 +461,14 @@ As the table shows, no matter how many attempts we try, it will only store the t
 
 If you want to challenge yourself again, you can press the `clean board` button
 
-<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-10 at 4.34.06 PM.png" style="zoom:50%;" />
+<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-11 at 5.00.33 PM.png" style="zoom:50%;" />
 
 After a few seconds:
 
-<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-10 at 4.34.24 PM.png" style="zoom:50%;" />
+<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-11 at 5.00.44 PM.png" style="zoom:50%;" />
 
 The board is clean! Lets go back to the game:
 
-<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-10 at 4.35.02 PM.png" style="zoom:50%;" />
+<img src="/Users/Ahsoka/Desktop/Screenshot 2024-07-11 at 5.01.15 PM.png" style="zoom:50%;" />
 
 The Attempt has been reset to 1, that means the button works!

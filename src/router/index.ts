@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import Wordle from '@/components/Wordle.vue'
+import Wordle_V2 from '@/components/Wordle_V2.vue'
 import Home from '@/components/Home.vue'
 import Portfolio from '@/components/Portfolio.vue'
 import ScoreBoard from '@/components/ScoreBoard.vue'
@@ -11,6 +12,10 @@ const router = createRouter({
     {
       path: '/Wordle',
       component: Wordle
+    },
+    {
+      path: '/Wordle_V2',
+      component: Wordle_V2
     },
     {
       path: '/Home',

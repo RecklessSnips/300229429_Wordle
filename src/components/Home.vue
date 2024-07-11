@@ -49,7 +49,35 @@
           </p>
         </div>
       </div>
-      <div class="assignment a3"></div>
+      <div class="assignment a3">
+        <div class="description">
+          <h2>Assignment 3 - Wordle Version 2</h2>
+          <p>
+            In the second version of our game Wordle, we use <strong>PHP</strong> as our server
+            which
+          </p>
+          <p>
+            stores the game state and generate the
+            <span style="text-decoration: underline">random</span> words for the game.
+          </p>
+          <p>
+            The aspect worth noting is that the game will store the player's
+            <span style="color: red">attempt</span>
+          </p>
+          <p>
+            <span style="color: red">number</span>: which round player is in, and the
+            <span style="color: blue">attempts</span>: how many times being
+          </p>
+          <p>tried to get the correct answer.</p>
+          <p>
+            We also use the PHP instead of Javascript to compute the checking logic for the game,
+          </p>
+          <p>and retrive all the game states through <strong>Ajax</strong>.</p>
+        </div>
+        <div class="place_holder">
+          <img src="/images/img13.png" alt="" width="560px" height="470px" />
+        </div>
+      </div>
       <div class="assignment a4"></div>
     </div>
     <div class="footer"></div>

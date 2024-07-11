@@ -17,6 +17,7 @@ import { onUnmounted } from 'vue'
       <RouterLink to="/Home">Home</RouterLink>
       <RouterLink to="/Portfolio">Portfolio</RouterLink>
       <RouterLink to="/Wordle">Wordle</RouterLink>
+      <RouterLink to="/Wordle_V2">Wordle_V2</RouterLink>
       <RouterLink to="/ScoreBoard">ScoreBoard</RouterLink>
     </div>
   </div>
@@ -34,7 +35,7 @@ import { onUnmounted } from 'vue'
   justify-content: space-between;
   background-color: gainsboro;
   border-radius: 10px;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   padding: 20px 0;
 }
 

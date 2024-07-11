@@ -24,5 +24,11 @@ export default {
   },
   getAttempts() {
     return apiClient.get('/attempts.php')
+  },
+  checkWord(word) {
+    return apiClient.post('/checkWord.php', word)
+  },
+  getWord() {
+    return apiClient.get('/word.php')
   }
 }
