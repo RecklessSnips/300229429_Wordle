@@ -18,6 +18,7 @@ import { onUnmounted } from 'vue'
       <RouterLink to="/Portfolio">Portfolio</RouterLink>
       <RouterLink to="/Wordle">Wordle</RouterLink>
       <RouterLink to="/Wordle_V2">Wordle_V2</RouterLink>
+      <RouterLink to="/Wordle_V3">Wordle_V3</RouterLink>
       <RouterLink to="/ScoreBoard">ScoreBoard</RouterLink>
     </div>
   </div>
@@ -40,7 +41,7 @@ import { onUnmounted } from 'vue'
 }
 
 .links > a {
-  margin-right: 4rem;
+  margin-right: 2rem;
 }
 
 .links > a:hover {

@@ -15,6 +15,7 @@ import ToastService from 'primevue/toastservice'
 import Dialog from 'primevue/dialog'
 import ConfirmDialog from 'primevue/confirmdialog'
 import ConfirmationService from 'primevue/confirmationservice'
+import InputText from 'primevue/inputtext'
 
 const app = createApp(App)
 
@@ -26,6 +27,7 @@ app.component('Button', Button)
 app.component('Toast', Toast)
 app.component('Dialog', Dialog)
 app.component('ConfirmDialog', ConfirmDialog)
+app.component('InputText', InputText)
 app.use(ToastService)
 app.use(ConfirmationService)
 

@@ -22,13 +22,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     if (isset($data['a_number']) && isset($data['a_attempts'])) {
+        $player = isset($data['current_player']) && !empty($data['current_player']) ? $data['current_player'] : 'Anonymous';
         $attempt_number = $data['a_number'];
         $attempts = $data['a_attempts'];
-        $_SESSION["Attempt_$attempt_number"] = $attempts;
-        
-        $response = ["Attempt " . $attempt_number => $_SESSION["Attempt_$attempt_number"]];
-        echo json_encode($response);
-
+        $_SESSION["Player_$player: $attempt_number"] = "$attempt_number $attempts";
     }
 } elseif ($_SERVER["REQUEST_METHOD"] === "GET") {
     echo json_encode($_SESSION);
