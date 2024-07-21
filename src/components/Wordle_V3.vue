@@ -1,6 +1,30 @@
 <template>
   <div class="subheader">
     <div class="info1">Life left: {{ life }}</div>
+    <Button label="Challenge" outlined @click="showDialog" />
+    <Dialog
+      v-model:visible="visible_1"
+      modal
+      header="Wordle"
+      :style="{ width: '25rem' }"
+      @hide="hideDialog"
+    >
+      <div class="text_prompt">Let the world know your name!</div>
+      <div class="inputfield">
+        <label for="username">Nickname</label>
+        <InputText v-model="nickname" id="username" class="input" autocomplete="off" />
+      </div>
+      <div class="button_groupt">
+        <Button
+          type="button"
+          label="Register"
+          severity="secondary"
+          outlined
+          @click="register"
+        ></Button>
+        <Button type="button" label="Login" outlined @click="login"></Button>
+      </div>
+    </Dialog>
     <div class="info2">Attempts: {{ php_attempts }}</div>
   </div>
   <div class="container">
@@ -16,7 +40,7 @@
             The answer was: <span style="color: rgb(255, 200, 1)">{{ oldAnswer }}</span>
           </p></Dialog
         >
-        <Button label="Give Up" severity="danger" @click="giveUp"></Button>
+        <Button label="Give Up" severity="danger" outlined @click="giveUp"></Button>
       </div>
     </div>
     <div>
@@ -29,12 +53,20 @@
         </div>
       </div>
     </div>
+    <div class="player" v-show="isLogin">
+      <span
+        >Player: <span style="color: rgb(238, 27, 224)">{{ current_player }}</span></span
+      >
+      <div style="margin-top: 5px; display: flex; justify-content: center">
+        <Button label="Logout" severity="info" outlined @click="logout"></Button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 export default {
-  name: 'Wordle_V2'
+  name: 'Wordle_V3'
 }
 </script>
 
@@ -49,6 +81,10 @@ const confirm = useConfirm()
 let currentRow = ref(0)
 let currentCol = ref(0)
 let visible = ref(false)
+let visible_1 = ref(false)
+let isLogin = ref(false)
+let nickname = ref('')
+let current_player = ref('')
 let php_attempts = ref(0)
 const words = ref('')
 
@@ -59,6 +95,7 @@ let life = ref(6)
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
+  getCurrentUser()
   fetchWord()
   fetchMessage()
 })
@@ -127,13 +164,60 @@ const warning = () => {
   })
 }
 
-const invalid = () => {
+const loginPopUp = () => {
+  toast.add({
+    severity: 'success',
+    summary: 'success',
+    detail: "You've logged in!",
+    life: 1000
+  })
+}
+
+const logoutPopUp = () => {
+  toast.add({
+    severity: 'success',
+    summary: 'success',
+    detail: "You've logout!",
+    life: 1000
+  })
+}
+
+const userNotExist = () => {
   toast.add({
     severity: 'warn',
     summary: 'warn',
-    detail: 'Invalid English Word',
+    detail: 'User not exist!',
     life: 1800
   })
+}
+
+const userAlreadyExist = () => {
+  toast.add({
+    severity: 'warn',
+    summary: 'warn',
+    detail: 'User already exist!',
+    life: 1800
+  })
+}
+
+const inputEmpty = () => {
+  toast.add({
+    severity: 'error',
+    summary: 'error',
+    detail: 'Nickname cannot be empty!',
+    life: 1800
+  })
+}
+
+const showDialog = () => {
+  visible_1.value = true
+  // Disable the game board
+  window.removeEventListener('keydown', handleKeydown)
+}
+
+const hideDialog = () => {
+  visible_1.value = false
+  window.addEventListener('keydown', handleKeydown) // Re-add global keydown listener
 }
 
 const handleKeydown = async (event: KeyboardEvent) => {
@@ -161,11 +245,15 @@ const handleKeydown = async (event: KeyboardEvent) => {
       if (response.data.result === 'win') {
         congrats()
         let player = {
+          current_player: current_player.value,
           a_number: php_attempts.value,
           a_attempts: 7 - life.value
         }
         api.sendMessage(player)
-        api.postAttempts(1)
+        api.postAttempts({
+          current_player: current_player.value
+        })
+        // fetchMessage()
         setTimeout(() => {
           resetBoard()
           resetRowCol()
@@ -173,7 +261,9 @@ const handleKeydown = async (event: KeyboardEvent) => {
         }, 3000)
       } else if (response.data.result === 'lose') {
         lose()
-        api.postAttempts(1)
+        api.postAttempts({
+          current_player: current_player.value
+        })
         setTimeout(() => {
           resetBoard()
           resetRowCol()
@@ -235,15 +325,95 @@ const resetBoard = () => {
 async function fetchMessage() {
   try {
     const session = await api.getAttempts()
-    if ('Attempt_Number' in session.data) {
-      const attempts_object = session.data['Attempt_Number']
-      php_attempts.value = attempts_object
+    let currentPlayer = 'Att_num_' + current_player.value
+    if (currentPlayer in session.data) {
+      let current_attempt = 'Att_num_' + current_player.value
+      const current_player_attempts = session.data[current_attempt]
+
+      php_attempts.value = current_player_attempts
     } else {
+      api.postAttempts({
+        current_player: current_player.value
+      })
+      // Init hardcode value
       php_attempts.value = 1
       return
     }
   } catch (error) {
     console.error('Error fetching message:', error)
+  }
+}
+
+const register = async () => {
+  if (nickname.value.trim() === '') {
+    inputEmpty()
+    return
+  }
+  try {
+    let player = {
+      nickname: nickname.value
+    }
+    const exist = await api.checkUserExist(player)
+    if (exist.data.exists) {
+      userAlreadyExist()
+    } else {
+      const response = await api.register(player)
+      current_player.value = response.data.currentUser
+      isLogin.value = true
+      visible_1.value = false
+      fetchMessage()
+      loginPopUp()
+      console.log('User registered:', response.data)
+    }
+  } catch (error) {
+    console.error('Error registering user:', error)
+  }
+}
+
+const login = async () => {
+  if (nickname.value.trim() === '') {
+    inputEmpty()
+    return
+  }
+  try {
+    console.log(nickname.value)
+    let user = {
+      nickname: nickname.value
+    }
+    const exist = await api.checkUserExist(user)
+    if (!exist.data.exists) {
+      userNotExist()
+    } else {
+      const response = await api.login(user)
+      current_player.value = response.data.currentUser
+      isLogin.value = true
+      visible_1.value = false
+      fetchMessage()
+      loginPopUp()
+      console.log('User login:', response.data)
+    }
+  } catch (error) {
+    console.error('Error registering user:', error)
+  }
+}
+
+const logout = () => {
+  current_player.value = 'Anonymous'
+  api.setCurrentUser({ current_player: current_player.value })
+  logoutPopUp()
+  fetchMessage()
+}
+
+// Get current login player form session
+const getCurrentUser = async () => {
+  let user = await api.getCurrentUser()
+  if (user.data != '') {
+    current_player.value = user.data
+    isLogin.value = true
+  } else {
+    current_player.value = 'Anonymous'
+    api.setCurrentUser({ current_player: current_player.value })
+    isLogin.value = false
   }
 }
 
@@ -255,7 +425,7 @@ onUnmounted(() => {
 <style scoped>
 .header {
   margin-bottom: 30rem;
-  margin-right: 5rem;
+  margin-right: 2rem;
 }
 .info1 {
   display: inline;
@@ -324,6 +494,41 @@ onUnmounted(() => {
 .gray {
   background-color: gray;
   animation: flip 1s ease forwards;
+}
+
+.text_prompt {
+  margin-bottom: 20px;
+}
+
+.inputfield {
+  display: flex;
+  justify-content: start;
+  margin-top: 10px;
+  margin-bottom: 13px;
+}
+
+label {
+  margin-right: 8px; /* 为label添加一些右边距 */
+  font-weight: 600; /* 字体加粗 */
+  width: 100px; /* 设置label的固定宽度 */
+}
+
+.input {
+  flex: 1; /* 使输入框自动填充可用空间 */
+  max-width: 200px; /* 可选：设置输入框的最大宽度 */
+  padding: 4px; /* 内边距 */
+  border: 1px solid #ccc; /* 边框样式 */
+  border-radius: 4px; /* 边框圆角 */
+}
+
+.button_groupt {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.player {
+  font-size: 1.3rem;
+  margin-left: 2rem;
 }
 
 @keyframes flip {
